@@ -52,11 +52,13 @@ Required for a production deployment:
 - `RPC_URL` or `BASE_RPC_URL` - Base RPC for core asset checks
 - `WEB3BIO_API_KEY` - API key from web3.bio
 - `UNRMN_NFT_ADDRESS` - uNRMN/uNORMANCOMICS ERC-721 collection
-- `UNRMN_TOKEN_ADDRESS` - optional uNRMN ERC-20 contract
 - `GOODLUMS_NFT_ADDRESS` - thegoodlums ERC-721 collection
 - `USDC_RECIPIENT_ADDRESS` - defaults to `0x3d95d4a6dbae0cd0643a82b13a13b08921d6adf7`
 
-Optional RPC overrides are included for Ethereum, Arbitrum, Optimism, Robinhood, Arc, and Hyperliquid.
+Optional values:
+
+- `UNRMN_TOKEN_ADDRESS` - add this if uNRMN access should also recognize an ERC-20 balance
+- RPC overrides for Ethereum, Arbitrum, Optimism, Robinhood, Arc, and Hyperliquid
 
 ## Local development
 

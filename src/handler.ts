@@ -25,7 +25,7 @@ const InputSchema = z.object({
           chain: z.enum(chainNames),
           contractAddress: z.string(),
           type: z.enum(["erc721", "erc20"]),
-          minBalance: z.string().optional(),
+          minBalance: z.string().regex(/^[0-9]+$/).optional(),
           label: z.string().optional(),
         }),
       ),

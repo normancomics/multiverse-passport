@@ -85,14 +85,11 @@ async function fetchEtherscanSummary(
   apiBaseUrl: string,
   address: Address,
 ): Promise<Pick<ExplorerData, "transactions" | "contractsDeployed" | "tokenBalances">> {
-  const txSummary = await fetchExplorerEnvelope(
-    `${apiBaseUrl}?module=account&action=txlist&address=${address}&page=1&offset=1&sort=desc`,
-  )
-
-  const txResults = Array.isArray(txSummary?.result) ? txSummary.result : []
+  void apiBaseUrl
+  void address
 
   return {
-    transactions: txResults.length > 0 ? txResults.length : null,
+    transactions: null,
     contractsDeployed: null,
     tokenBalances: [],
   }
