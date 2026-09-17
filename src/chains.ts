@@ -60,8 +60,6 @@ export const chainConfig: ChainConfig[] = [
     viemChain: mainnet,
     rpcUrl: process.env.ETHEREUM_RPC_URL,
     explorerBaseUrl: "https://etherscan.io",
-    explorerApiBaseUrl: "https://api.etherscan.io/api",
-    explorerApiKind: "etherscan",
     nativeDomainService: "ENS",
     domainServices: [
       {
@@ -80,8 +78,6 @@ export const chainConfig: ChainConfig[] = [
     viemChain: base,
     rpcUrl: process.env.BASE_RPC_URL ?? process.env.RPC_URL,
     explorerBaseUrl: "https://basescan.org",
-    explorerApiBaseUrl: "https://api.basescan.org/api",
-    explorerApiKind: "etherscan",
     nativeDomainService: "Basenames",
     domainServices: [
       {
@@ -134,8 +130,6 @@ export const chainConfig: ChainConfig[] = [
     viemChain: arbitrum,
     rpcUrl: process.env.ARBITRUM_RPC_URL,
     explorerBaseUrl: "https://arbiscan.io",
-    explorerApiBaseUrl: "https://api.arbiscan.io/api",
-    explorerApiKind: "etherscan",
     nativeDomainService: ".arb Name Service",
     domainServices: [
       {
@@ -154,8 +148,6 @@ export const chainConfig: ChainConfig[] = [
     viemChain: optimism,
     rpcUrl: process.env.OPTIMISM_RPC_URL,
     explorerBaseUrl: "https://optimistic.etherscan.io",
-    explorerApiBaseUrl: "https://api-optimistic.etherscan.io/api",
-    explorerApiKind: "etherscan",
     nativeDomainService: "OPNS",
     domainServices: [
       {

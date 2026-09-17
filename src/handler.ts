@@ -7,7 +7,7 @@ import { getAddress, isAddress } from "viem"
 import { z } from "zod/v4"
 import { chainNames } from "./chains.js"
 import { manifest } from "./manifest.js"
-import { recordUsage } from "./monetization.js"
+import { safeRecordUsage } from "./monetization.js"
 import { buildMultichainPassport, getPreferredChains } from "./multichain.js"
 import { evaluateCustomPassport, getCoreHoldingStatus } from "./onchain.js"
 
@@ -88,7 +88,7 @@ const publicHandler = createToolHandler<any, any>({
       getCoreHoldingStatus(address),
       evaluateCustomPassport(address, payload.customPassport),
     ])
-    recordUsage({
+    safeRecordUsage({
       chain: payload.chain ?? "base",
       caller: address,
       endpoint: "/api/tool",

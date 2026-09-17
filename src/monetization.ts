@@ -48,6 +48,21 @@ export function recordUsage(params: {
   return record
 }
 
+export function safeRecordUsage(params: {
+  chain: ChainName | "unknown"
+  caller: Address | string | null
+  endpoint: string
+  responseType: "public" | "gated"
+  amount?: string
+}) {
+  try {
+    return recordUsage(params)
+  } catch (error) {
+    console.warn("multiverse-passport-usage-failed", error)
+    return null
+  }
+}
+
 export function recordPayment(params: {
   chain: ChainName
   caller: Address | string | null
