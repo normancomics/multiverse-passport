@@ -93,7 +93,7 @@ const publicHandler = createToolHandler<any, any>({
       caller: address,
       endpoint: "/api/tool",
       responseType: "public",
-      amount: payload.customPassport?.feeUsdc ?? "0",
+      amount: "0",
     })
 
     return {

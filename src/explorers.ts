@@ -111,10 +111,7 @@ async function fetchBlockscoutSummary(
         : typeof summary?.transactions_count === "number"
           ? summary.transactions_count
           : null,
-    contractsDeployed:
-      typeof summary?.token_transfers_count === "number"
-        ? summary.token_transfers_count
-        : null,
+    contractsDeployed: null,
     tokenBalances: parseTokenBalances(tokenBalances),
   }
 }

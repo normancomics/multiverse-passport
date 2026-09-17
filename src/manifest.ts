@@ -1,17 +1,7 @@
-import { defineManifest, ERC721OwnerPredicateClient } from "@opensea/tool-sdk"
+import { defineManifest } from "@opensea/tool-sdk"
 import { chainNames } from "./chains.js"
 
 const creatorAddress = "0x3d95d4a6dbae0cd0643a82b13a13b08921d6adf7" as const
-const gateCollection =
-  (process.env.UNRMN_NFT_ADDRESS as `0x${string}` | undefined) ??
-  "0x0000000000000000000000000000000000000000"
-
-const access = new ERC721OwnerPredicateClient().toManifestAccess(
-  gateCollection,
-  {
-    label: "Hold a uNRMN/uNORMANCOMICS NFT to unlock the full verified passport",
-  },
-)
 
 export const manifest = defineManifest({
   type: "https://ercs.ethereum.org/ERCS/erc-8257#tool-manifest-v1",
@@ -142,7 +132,6 @@ export const manifest = defineManifest({
   },
   creatorAddress,
   pricing: [],
-  access,
   tags: [
     "opensea",
     "erc-8257",

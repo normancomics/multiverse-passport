@@ -2,7 +2,7 @@ import { getAddress, type Address } from "viem"
 import { chainConfig, getChainByName } from "./chains.js"
 import { resolveDomainsForAllChains } from "./domains.js"
 import { getExplorerDataForChains } from "./explorers.js"
-import { getRevenueSnapshot, recordPayment, recordUsage } from "./monetization.js"
+import { getRevenueSnapshot, recordUsage } from "./monetization.js"
 import { evaluateCustomPassport, getCoreHoldingStatus } from "./onchain.js"
 import type {
   ChainName,
@@ -158,22 +158,13 @@ export async function buildMultichainPassport(
     customUnlocks: customPassportEvaluation?.unlocks,
   })
 
-  if (customPassportConfig?.feeUsdc && customPassportConfig.feeUsdc !== "0") {
-    recordPayment({
-      chain: preferredChains[0] ?? "base",
-      caller: normalized,
-      endpoint: "/api/tool",
-      amount: customPassportConfig.feeUsdc,
-    })
-  } else {
-    recordUsage({
-      chain: preferredChains[0] ?? "base",
-      caller: normalized,
-      endpoint: "/api/tool",
-      responseType: "gated",
-      amount: "0",
-    })
-  }
+  recordUsage({
+    chain: preferredChains[0] ?? "base",
+    caller: normalized,
+    endpoint: "/api/tool",
+    responseType: "gated",
+    amount: "0",
+  })
 
   return {
     address: normalized,
