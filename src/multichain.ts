@@ -103,7 +103,11 @@ export async function checkNftHoldings(address: Address, chains: ChainName[]) {
     chain =>
       ({
         chain,
-        ...core,
+        hasUnrmnNft: chain === "base" ? core.hasUnrmnNft : false,
+        hasUnrmnToken: chain === "base" ? core.hasUnrmnToken : false,
+        hasGoodlumsNft: chain === "base" ? core.hasGoodlumsNft : false,
+        holdsUnrmn: chain === "base" ? core.holdsUnrmn : false,
+        dualCitizen: chain === "base" ? core.dualCitizen : false,
       }) satisfies HoldingStatus,
   )
 }

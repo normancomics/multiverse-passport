@@ -31,6 +31,12 @@ export const manifest = defineManifest({
         description:
           "Optional wallet address. When provided, runs the public overlap check without social resolution.",
       },
+      mode: {
+        type: "string",
+        enum: ["public", "gated"],
+        description:
+          "Optional explicit mode selector. Use public with address for open checks, or gated without address for the verified caller passport.",
+      },
       chain: {
         type: "string",
         enum: chainNames,

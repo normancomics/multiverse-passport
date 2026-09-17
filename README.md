@@ -5,7 +5,7 @@ Multiverse Passport is an ERC-8257 tool for OpenSea's agent tool bazaar that che
 ## What it does
 
 - Public path: any caller can submit an `address` and receive membership status only.
-- Gated path: an authenticated caller omits `address` and receives a full Multiverse Passport for their own wallet.
+- Gated path: an authenticated caller uses `mode: "gated"` without `address` and receives a full Multiverse Passport for their own wallet.
 - Membership logic: checks whether a wallet holds both a uNRMN/uNORMANCOMICS NFT or token and a thegoodlums NFT.
 - Custom passport builder: optionally accepts your own contract addresses, asset types, chain selections, unlock descriptions, and fee metadata per request.
 - Social resolution: enriches the gated passport with X, Farcaster, ENS, avatar, and display name data via web3.bio.
@@ -87,6 +87,7 @@ Custom passport example:
 curl -X POST http://localhost:3000/api/tool \
   -H 'content-type: application/json' \
   -d '{
+    "mode":"public",
     "address":"0x0000000000000000000000000000000000000000",
     "customPassport":{
       "name":"Creator Passport",
@@ -119,7 +120,7 @@ Gated lookup example after registration:
 ```bash
 PRIVATE_KEY=0x... RPC_URL=https://mainnet.base.org \
   npx @opensea/tool-sdk auth http://localhost:3000/api/tool \
-  --body '{}'
+  --body '{"mode":"gated"}'
 ```
 
 Manifest validation:
@@ -180,14 +181,14 @@ PRIVATE_KEY=0x... RPC_URL=https://mainnet.base.org \
 
 ### Public overlap check
 
-- Send a POST body with `address`.
+- Send a POST body with `mode: "public"` and `address`.
 - The tool returns only membership status.
 - No caller signature is required.
 - No social handles are resolved.
 
 ### Gated full passport
 
-- Send a POST body without `address`.
+- Send a POST body with `mode: "gated"` and without `address`.
 - The first request receives a zero-value EIP-3009 challenge from `predicateGate`.
 - Retry with `npx @opensea/tool-sdk auth` or an ERC-8257-compatible client.
 - The tool resolves the verified caller's own multichain passport.

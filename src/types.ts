@@ -28,6 +28,7 @@ export interface ChainConfig {
   rpcUrl?: string
   explorerBaseUrl: string
   explorerApiBaseUrl?: string
+  explorerApiKind?: "etherscan" | "blockscout"
   nativeDomainService: string
   domainServices: DomainService[]
 }

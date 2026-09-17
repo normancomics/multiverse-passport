@@ -13,6 +13,7 @@ import { evaluateCustomPassport, getCoreHoldingStatus } from "./onchain.js"
 
 const InputSchema = z.object({
   address: z.string().optional(),
+  mode: z.enum(["public", "gated"]).optional(),
   chain: z.enum(chainNames).optional(),
   customPassport: z
     .object({
@@ -68,6 +69,12 @@ const publicHandler = createToolHandler<any, any>({
   outputSchema: OutputSchema as any,
   handler: async input => {
     const payload = input ?? {}
+    if (payload.mode === "gated") {
+      throw new ToolHandlerError(
+        400,
+        "Public handler cannot be used with mode=gated.",
+      )
+    }
 
     if (!payload.address || !isAddress(payload.address)) {
       throw new ToolHandlerError(
@@ -117,6 +124,12 @@ const gatedHandler = createToolHandler<any, any>({
     : [],
   handler: async (input, ctx) => {
     const payload = input ?? {}
+    if (payload.address) {
+      throw new ToolHandlerError(
+        400,
+        "Gated mode resolves the verified caller only. Remove address or use mode=public.",
+      )
+    }
 
     if (!toolId) {
       throw new ToolHandlerError(
@@ -154,13 +167,18 @@ const gatedHandler = createToolHandler<any, any>({
 })
 
 export const toolHandler = async (request: Request) => {
-  let body: { address?: unknown } = {}
+  let body: { address?: unknown; mode?: unknown } = {}
   try {
-    body = (await request.clone().json()) as { address?: unknown }
+    body = (await request.clone().json()) as { address?: unknown; mode?: unknown }
   } catch {
     body = {}
   }
 
-  const isPublicLookup = typeof body.address === "string" && body.address.length > 0
+  const explicitMode = body.mode === "public" || body.mode === "gated" ? body.mode : null
+  const isPublicLookup =
+    explicitMode === "public" ||
+    (explicitMode !== "gated" &&
+      typeof body.address === "string" &&
+      body.address.length > 0)
   return isPublicLookup ? publicHandler(request) : gatedHandler(request)
 }

@@ -61,6 +61,7 @@ export const chainConfig: ChainConfig[] = [
     rpcUrl: process.env.ETHEREUM_RPC_URL,
     explorerBaseUrl: "https://etherscan.io",
     explorerApiBaseUrl: "https://api.etherscan.io/api",
+    explorerApiKind: "etherscan",
     nativeDomainService: "ENS",
     domainServices: [
       {
@@ -80,6 +81,7 @@ export const chainConfig: ChainConfig[] = [
     rpcUrl: process.env.BASE_RPC_URL ?? process.env.RPC_URL,
     explorerBaseUrl: "https://basescan.org",
     explorerApiBaseUrl: "https://api.basescan.org/api",
+    explorerApiKind: "etherscan",
     nativeDomainService: "Basenames",
     domainServices: [
       {
@@ -99,6 +101,7 @@ export const chainConfig: ChainConfig[] = [
     rpcUrl: process.env.ROBINHOOD_RPC_URL,
     explorerBaseUrl: "https://robinhoodchain.blockscout.com",
     explorerApiBaseUrl: "https://robinhoodchain.blockscout.com/api/v2",
+    explorerApiKind: "blockscout",
     nativeDomainService: "HoodDomains",
     domainServices: [
       {
@@ -132,6 +135,7 @@ export const chainConfig: ChainConfig[] = [
     rpcUrl: process.env.ARBITRUM_RPC_URL,
     explorerBaseUrl: "https://arbiscan.io",
     explorerApiBaseUrl: "https://api.arbiscan.io/api",
+    explorerApiKind: "etherscan",
     nativeDomainService: ".arb Name Service",
     domainServices: [
       {
@@ -151,6 +155,7 @@ export const chainConfig: ChainConfig[] = [
     rpcUrl: process.env.OPTIMISM_RPC_URL,
     explorerBaseUrl: "https://optimistic.etherscan.io",
     explorerApiBaseUrl: "https://api-optimistic.etherscan.io/api",
+    explorerApiKind: "etherscan",
     nativeDomainService: "OPNS",
     domainServices: [
       {
