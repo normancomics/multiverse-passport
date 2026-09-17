@@ -1,4 +1,4 @@
-import type { Address, Chain } from "viem"
+import type { Address } from "viem"
 
 export type ChainName =
   | "ethereum"
@@ -22,7 +22,7 @@ export interface ChainConfig {
   id: number
   name: ChainName
   displayName: string
-  viemChain: Chain
+  viemChain: unknown
   rpcUrl?: string
   explorerBaseUrl: string
   explorerApiBaseUrl?: string

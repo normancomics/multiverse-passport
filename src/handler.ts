@@ -5,7 +5,6 @@ import {
 } from "@opensea/tool-sdk"
 import { getAddress, isAddress } from "viem"
 import { z } from "zod/v4"
-import { base } from "viem/chains"
 import { chainNames } from "./chains.js"
 import { manifest } from "./manifest.js"
 import { recordUsage } from "./monetization.js"
@@ -17,68 +16,17 @@ const InputSchema = z.object({
   chain: z.enum(chainNames).optional(),
 })
 
-const HoldingsSchema = z.object({
-  hasUnrmnNft: z.boolean(),
-  hasUnrmnToken: z.boolean(),
-  hasGoodlumsNft: z.boolean(),
-  holdsUnrmn: z.boolean(),
-  dualCitizen: z.boolean(),
-})
+const HoldingsSchema = z
+  .object({
+    hasUnrmnNft: z.boolean(),
+    hasUnrmnToken: z.boolean(),
+    hasGoodlumsNft: z.boolean(),
+    holdsUnrmn: z.boolean(),
+    dualCitizen: z.boolean(),
+  })
+  .passthrough()
 
-const PassportCardSchema = z.object({
-  title: z.string(),
-  status: z.enum(["dual-citizen", "single-citizen", "visitor"]),
-  tier: z.enum(["dual-citizen", "resident", "visitor"]),
-  summary: z.string(),
-  verifiedHandles: z.object({
-    x: z.string().nullable(),
-    farcaster: z.string().nullable(),
-    ens: z.string().nullable(),
-    displayName: z.string().nullable(),
-  }),
-  rewards: z.array(z.string()),
-})
-
-const ExplorerDataSchema = z.object({
-  chain: z.enum(chainNames),
-  explorerUrl: z.string(),
-  addressUrl: z.string(),
-  nativeBalance: z.string().nullable(),
-  transactions: z.number().nullable(),
-  contractsDeployed: z.number().nullable(),
-  tokenBalances: z.array(
-    z.object({
-      contract: z.string(),
-      symbol: z.string().nullable(),
-      balance: z.string(),
-    }),
-  ),
-})
-
-const DomainSchema = z.object({
-  chain: z.enum(chainNames),
-  domains: z.array(
-    z.object({
-      service: z.string(),
-      domain: z.string(),
-      type: z.enum(["official", "community"]),
-      status: z.enum(["official", "established", "emerging"]),
-      explorerUrl: z.string().optional(),
-    }),
-  ),
-  primaryDomain: z.string().nullable(),
-  services: z.array(
-    z.object({
-      name: z.string(),
-      type: z.enum(["official", "community"]),
-      tlds: z.array(z.string()),
-      explorerBaseUrl: z.string().optional(),
-      lookupUrlTemplate: z.string().optional(),
-      status: z.enum(["official", "established", "emerging"]),
-    }),
-  ),
-  explorerUrls: z.array(z.string()),
-})
+const PassportCardSchema = z.object({}).passthrough()
 
 const OutputSchema = z.object({
   mode: z.enum(["public", "gated"]),
@@ -87,37 +35,7 @@ const OutputSchema = z.object({
   dualCitizen: z.boolean(),
   holdings: HoldingsSchema,
   passportCard: PassportCardSchema.nullable(),
-  multichainPassport: z
-    .object({
-      address: z.string(),
-      dualCitizen: z.boolean(),
-      holdings: HoldingsSchema.extend({ chain: z.enum(chainNames) }),
-      holdingsByChain: z.array(HoldingsSchema.extend({ chain: z.enum(chainNames) })),
-      primaryIdentity: z.string().nullable(),
-      domains: z.array(DomainSchema),
-      social: z.object({
-        twitter: z.string().nullable(),
-        farcaster: z.string().nullable(),
-        ens: z.string().nullable(),
-        displayName: z.string().nullable(),
-        avatar: z.string().nullable(),
-        links: z.array(z.string()),
-      }),
-      explorers: z.array(ExplorerDataSchema),
-      passportCard: PassportCardSchema,
-      revenue: z.array(
-        z.object({
-          chain: z.union([z.enum(chainNames), z.literal("unknown")]),
-          caller: z.string().nullable(),
-          endpoint: z.string(),
-          timestamp: z.string(),
-          responseType: z.enum(["public", "gated"]),
-          amount: z.string(),
-          recipient: z.string(),
-        }),
-      ),
-    })
-    .nullable(),
+  multichainPassport: z.object({}).passthrough().nullable(),
 })
 
 const creatorAddress = "0x3d95d4a6dbae0cd0643a82b13a13b08921d6adf7" as const
@@ -125,22 +43,24 @@ const toolId = process.env.TOOL_ID ? BigInt(process.env.TOOL_ID) : null
 const operatorAddress =
   (process.env.OPERATOR_ADDRESS as `0x${string}` | undefined) ?? creatorAddress
 
-const publicHandler = createToolHandler({
+const publicHandler = createToolHandler<any, any>({
   manifest,
-  inputSchema: InputSchema,
-  outputSchema: OutputSchema,
+  inputSchema: InputSchema as any,
+  outputSchema: OutputSchema as any,
   handler: async input => {
-    if (!input.address || !isAddress(input.address)) {
+    const payload = input ?? {}
+
+    if (!payload.address || !isAddress(payload.address)) {
       throw new ToolHandlerError(
         400,
         "Public lookups require a valid wallet address in the address field.",
       )
     }
 
-    const address = getAddress(input.address)
+    const address = getAddress(payload.address)
     const holdings = await getCoreHoldingStatus(address)
     recordUsage({
-      chain: input.chain ?? "base",
+      chain: payload.chain ?? "base",
       caller: address,
       endpoint: "/api/tool",
       responseType: "public",
@@ -159,21 +79,22 @@ const publicHandler = createToolHandler({
   },
 })
 
-const gatedHandler = createToolHandler({
+const gatedHandler = createToolHandler<any, any>({
   manifest,
-  inputSchema: InputSchema,
-  outputSchema: OutputSchema,
+  inputSchema: InputSchema as any,
+  outputSchema: OutputSchema as any,
   gates: toolId
     ? [
         predicateGate({
           toolId,
           operatorAddress,
-          chain: base,
           rpcUrl: process.env.RPC_URL ?? process.env.BASE_RPC_URL,
         }),
       ]
     : [],
-  handler: async (_input, ctx) => {
+  handler: async (input, ctx) => {
+    const payload = input ?? {}
+
     if (!toolId) {
       throw new ToolHandlerError(
         503,
@@ -189,7 +110,7 @@ const gatedHandler = createToolHandler({
     }
 
     const address = getAddress(ctx.callerAddress)
-    const preferredChains = getPreferredChains(_input.chain ?? null)
+    const preferredChains = getPreferredChains(payload.chain ?? null)
     const passport = await buildMultichainPassport(address, preferredChains)
 
     return {

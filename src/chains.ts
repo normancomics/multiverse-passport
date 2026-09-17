@@ -1,4 +1,4 @@
-import { defineChain, type Chain } from "viem"
+import { defineChain } from "viem"
 import { arbitrum, base, mainnet, optimism } from "viem/chains"
 import type { ChainConfig, ChainName } from "./types.js"
 
@@ -7,7 +7,7 @@ const parseChainId = (value: string | undefined, fallback: number) => {
   return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback
 }
 
-const robinhood: Chain = defineChain({
+const robinhood = defineChain({
   id: parseChainId(process.env.ROBINHOOD_CHAIN_ID, 4663),
   name: "Robinhood Chain",
   nativeCurrency: { name: "Ethereum", symbol: "ETH", decimals: 18 },
@@ -22,7 +22,7 @@ const robinhood: Chain = defineChain({
   },
 })
 
-const arc: Chain = defineChain({
+const arc = defineChain({
   id: parseChainId(process.env.ARC_CHAIN_ID, 424242),
   name: "Arc",
   nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
@@ -37,7 +37,7 @@ const arc: Chain = defineChain({
   },
 })
 
-const hyperliquid: Chain = defineChain({
+const hyperliquid = defineChain({
   id: parseChainId(process.env.HYPERLIQUID_CHAIN_ID, 999),
   name: "Hyperliquid EVM",
   nativeCurrency: { name: "HYPE", symbol: "HYPE", decimals: 18 },

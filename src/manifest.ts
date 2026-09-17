@@ -1,11 +1,4 @@
-import {
-  createToolHandler,
-  defineManifest,
-  ERC721OwnerPredicateClient,
-  predicateGate,
-} from "@opensea/tool-sdk"
-import { z } from "zod/v4"
-import { base } from "viem/chains"
+import { defineManifest, ERC721OwnerPredicateClient } from "@opensea/tool-sdk"
 import { chainNames } from "./chains.js"
 
 const creatorAddress = "0x3d95d4a6dbae0cd0643a82b13a13b08921d6adf7" as const
@@ -13,7 +6,7 @@ const gateCollection =
   (process.env.UNRMN_NFT_ADDRESS as `0x${string}` | undefined) ??
   "0x0000000000000000000000000000000000000000"
 
-const access = new ERC721OwnerPredicateClient({ chain: base }).toManifestAccess(
+const access = new ERC721OwnerPredicateClient().toManifestAccess(
   gateCollection,
   {
     label: "Hold a uNRMN/uNORMANCOMICS NFT to unlock the full verified passport",
@@ -29,7 +22,7 @@ export const manifest = defineManifest({
     process.env.TOOL_ENDPOINT ??
     (process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}/api/tool`
-      : "http://localhost:3000/api/tool"),
+      : "https://multiverse-passport.example/api/tool"),
   inputs: {
     type: "object",
     properties: {
@@ -104,20 +97,4 @@ export const manifest = defineManifest({
     "nft-gating",
     "passport",
   ],
-})
-
-export const manifestCheckHandler = createToolHandler({
-  manifest,
-  inputSchema: z.object({}).passthrough(),
-  outputSchema: z.object({ ok: z.boolean() }),
-  gates: [
-    predicateGate({
-      toolId: BigInt(process.env.TOOL_ID ?? "0"),
-      operatorAddress:
-        (process.env.OPERATOR_ADDRESS as `0x${string}` | undefined) ?? creatorAddress,
-      chain: base,
-      rpcUrl: process.env.RPC_URL ?? process.env.BASE_RPC_URL,
-    }),
-  ],
-  handler: async () => ({ ok: true }),
 })

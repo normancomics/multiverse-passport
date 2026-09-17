@@ -20,7 +20,7 @@ async function getNativeBalance(chainName: ChainName, address: Address) {
 
   try {
     const client = createPublicClient({
-      chain: config.viemChain,
+      chain: config.viemChain as never,
       transport: http(config.rpcUrl),
     })
     const balance = await client.getBalance({ address })
