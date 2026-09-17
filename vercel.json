@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/.well-known/ai-tool/multiverse-passport.json",
+      "destination": "/api/well-known"
+    },
+    {
+      "source": "/api/tool",
+      "destination": "/api/tool"
+    }
+  ]
+}
