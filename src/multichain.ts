@@ -3,8 +3,15 @@ import { chainConfig, getChainByName } from "./chains.js"
 import { resolveDomainsForAllChains } from "./domains.js"
 import { getExplorerDataForChains } from "./explorers.js"
 import { recordPayment, getRevenueSnapshot } from "./monetization.js"
-import { getCoreHoldingStatus } from "./onchain.js"
-import type { ChainName, HoldingStatus, MultichainPassport, PassportCard, Tier } from "./types.js"
+import { evaluateCustomPassport, getCoreHoldingStatus } from "./onchain.js"
+import type {
+  ChainName,
+  CustomPassportConfig,
+  HoldingStatus,
+  MultichainPassport,
+  PassportCard,
+  Tier,
+} from "./types.js"
 import { resolveWeb3BioProfile, summarizeIdentity } from "./web3bio.js"
 
 function buildTier(dualCitizen: boolean, holdsUnrmn: boolean): Tier {
@@ -21,7 +28,36 @@ function buildPassportCard(params: {
   dualCitizen: boolean
   holdsUnrmn: boolean
   social: ReturnType<typeof summarizeIdentity>
+  customPassportConfig?: CustomPassportConfig
+  customPassportPassed?: boolean
+  customUnlocks?: string[]
 }): PassportCard {
+  if (params.customPassportConfig) {
+    const passed = params.customPassportPassed ?? false
+    return {
+      title: params.customPassportConfig.name?.trim() || "Custom Passport",
+      status: passed ? "dual-citizen" : "visitor",
+      tier: passed ? "dual-citizen" : "visitor",
+      summary:
+        params.customPassportConfig.description?.trim() ||
+        (passed
+          ? "This wallet passed the custom token-gated passport rules."
+          : "This wallet did not pass the custom token-gated passport rules."),
+      verifiedHandles: {
+        x: params.social.twitter,
+        farcaster: params.social.farcaster,
+        ens: params.social.ens,
+        displayName: params.social.displayName,
+      },
+      rewards:
+        passed && params.customUnlocks && params.customUnlocks.length > 0
+          ? params.customUnlocks
+          : passed
+            ? ["Custom passport access granted"]
+            : ["Custom passport access not yet unlocked"],
+    }
+  }
+
   const tier = buildTier(params.dualCitizen, params.holdsUnrmn)
   const status =
     tier === "dual-citizen"
@@ -91,12 +127,14 @@ export async function resolvePrimaryIdentity(
 export async function buildMultichainPassport(
   address: Address,
   preferredChains: ChainName[] = chainConfig.map(chain => chain.name),
+  customPassportConfig?: CustomPassportConfig,
 ): Promise<MultichainPassport> {
   const normalized = getAddress(address)
-  const [profiles, holdingsByChain, explorers] = await Promise.all([
+  const [profiles, holdingsByChain, explorers, customPassportEvaluation] = await Promise.all([
     resolveWeb3BioProfile(normalized),
     checkNftHoldings(normalized, preferredChains),
     getExplorerDataForChains(normalized, preferredChains),
+    evaluateCustomPassport(normalized, customPassportConfig),
   ])
 
   const social = summarizeIdentity(profiles)
@@ -109,13 +147,16 @@ export async function buildMultichainPassport(
     dualCitizen: holdings.dualCitizen,
     holdsUnrmn: holdings.holdsUnrmn,
     social,
+    customPassportConfig,
+    customPassportPassed: customPassportEvaluation?.passed,
+    customUnlocks: customPassportEvaluation?.unlocks,
   })
 
   recordPayment({
     chain: preferredChains[0] ?? "base",
     caller: normalized,
     endpoint: "/api/tool",
-    amount: "0",
+    amount: customPassportConfig?.feeUsdc ?? "0",
   })
 
   return {
@@ -130,6 +171,7 @@ export async function buildMultichainPassport(
     social,
     explorers,
     passportCard,
+    customPassportEvaluation,
     revenue: getRevenueSnapshot(normalized),
   }
 }

@@ -9,6 +9,8 @@ export type ChainName =
   | "arc"
   | "hyperliquid"
 
+export type AssetType = "erc721" | "erc20"
+
 export interface DomainService {
   name: string
   type: "official" | "community"
@@ -105,6 +107,38 @@ export interface PassportCard {
 
 export type Tier = "dual-citizen" | "resident" | "visitor"
 
+export interface CustomPassportGate {
+  chain: ChainName
+  contractAddress: Address
+  type: AssetType
+  minBalance?: string
+  label?: string
+}
+
+export interface CustomPassportConfig {
+  name?: string
+  description?: string
+  match?: "all" | "any"
+  gates: CustomPassportGate[]
+  unlocks?: string[]
+  feeUsdc?: string
+}
+
+export interface CustomPassportGateResult {
+  gate: CustomPassportGate
+  passed: boolean
+  checkedBalance: string
+}
+
+export interface CustomPassportEvaluation {
+  name: string
+  match: "all" | "any"
+  passed: boolean
+  unlocks: string[]
+  feeUsdc: string | null
+  results: CustomPassportGateResult[]
+}
+
 export interface RevenueRecord {
   chain: ChainName | "unknown"
   caller: Address | string | null
@@ -125,5 +159,6 @@ export interface MultichainPassport {
   social: SocialIdentitySummary
   explorers: ExplorerData[]
   passportCard: PassportCard
+  customPassportEvaluation: CustomPassportEvaluation | null
   revenue: RevenueRecord[]
 }

@@ -37,6 +37,32 @@ export const manifest = defineManifest({
         description:
           "Preferred identity chain used to rank domains and explorers in the returned passport.",
       },
+      customPassport: {
+        type: "object",
+        description:
+          "Optional custom token-gated passport definition. Supply your own contracts, chains, unlocks, and optional fee metadata.",
+        properties: {
+          name: { type: "string" },
+          description: { type: "string" },
+          match: { type: "string", enum: ["all", "any"] },
+          gates: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                chain: { type: "string", enum: chainNames },
+                contractAddress: { type: "string" },
+                type: { type: "string", enum: ["erc721", "erc20"] },
+                minBalance: { type: "string" },
+                label: { type: "string" },
+              },
+              required: ["chain", "contractAddress", "type"],
+            },
+          },
+          unlocks: { type: "array", items: { type: "string" } },
+          feeUsdc: { type: "string" },
+        },
+      },
     },
   },
   outputs: {
@@ -63,6 +89,27 @@ export const manifest = defineManifest({
           "dualCitizen",
         ],
       },
+      customPassportEvaluation: {
+        type: ["object", "null"],
+        properties: {
+          name: { type: "string" },
+          match: { type: "string", enum: ["all", "any"] },
+          passed: { type: "boolean" },
+          unlocks: { type: "array", items: { type: "string" } },
+          feeUsdc: { type: ["string", "null"] },
+          results: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                gate: { type: "object" },
+                passed: { type: "boolean" },
+                checkedBalance: { type: "string" },
+              },
+            },
+          },
+        },
+      },
       passportCard: {
         type: ["object", "null"],
         properties: {
@@ -82,6 +129,7 @@ export const manifest = defineManifest({
       "verifiedCaller",
       "dualCitizen",
       "holdings",
+      "customPassportEvaluation",
       "passportCard",
       "multichainPassport",
     ],

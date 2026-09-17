@@ -9,11 +9,29 @@ import { chainNames } from "./chains.js"
 import { manifest } from "./manifest.js"
 import { recordUsage } from "./monetization.js"
 import { buildMultichainPassport, getPreferredChains } from "./multichain.js"
-import { getCoreHoldingStatus } from "./onchain.js"
+import { evaluateCustomPassport, getCoreHoldingStatus } from "./onchain.js"
 
 const InputSchema = z.object({
   address: z.string().optional(),
   chain: z.enum(chainNames).optional(),
+  customPassport: z
+    .object({
+      name: z.string().optional(),
+      description: z.string().optional(),
+      match: z.enum(["all", "any"]).optional(),
+      gates: z.array(
+        z.object({
+          chain: z.enum(chainNames),
+          contractAddress: z.string(),
+          type: z.enum(["erc721", "erc20"]),
+          minBalance: z.string().optional(),
+          label: z.string().optional(),
+        }),
+      ),
+      unlocks: z.array(z.string()).optional(),
+      feeUsdc: z.string().optional(),
+    })
+    .optional(),
 })
 
 const HoldingsSchema = z
@@ -34,6 +52,7 @@ const OutputSchema = z.object({
   verifiedCaller: z.string().nullable(),
   dualCitizen: z.boolean(),
   holdings: HoldingsSchema,
+  customPassportEvaluation: z.object({}).passthrough().nullable(),
   passportCard: PassportCardSchema.nullable(),
   multichainPassport: z.object({}).passthrough().nullable(),
 })
@@ -58,13 +77,16 @@ const publicHandler = createToolHandler<any, any>({
     }
 
     const address = getAddress(payload.address)
-    const holdings = await getCoreHoldingStatus(address)
+    const [holdings, customPassportEvaluation] = await Promise.all([
+      getCoreHoldingStatus(address),
+      evaluateCustomPassport(address, payload.customPassport),
+    ])
     recordUsage({
       chain: payload.chain ?? "base",
       caller: address,
       endpoint: "/api/tool",
       responseType: "public",
-      amount: "0",
+      amount: payload.customPassport?.feeUsdc ?? "0",
     })
 
     return {
@@ -73,6 +95,7 @@ const publicHandler = createToolHandler<any, any>({
       verifiedCaller: null,
       dualCitizen: holdings.dualCitizen,
       holdings,
+      customPassportEvaluation,
       passportCard: null,
       multichainPassport: null,
     }
@@ -111,7 +134,11 @@ const gatedHandler = createToolHandler<any, any>({
 
     const address = getAddress(ctx.callerAddress)
     const preferredChains = getPreferredChains(payload.chain ?? null)
-    const passport = await buildMultichainPassport(address, preferredChains)
+    const passport = await buildMultichainPassport(
+      address,
+      preferredChains,
+      payload.customPassport,
+    )
 
     return {
       mode: "gated",
@@ -119,6 +146,7 @@ const gatedHandler = createToolHandler<any, any>({
       verifiedCaller: address,
       dualCitizen: passport.dualCitizen,
       holdings: passport.holdings,
+      customPassportEvaluation: passport.customPassportEvaluation,
       passportCard: passport.passportCard,
       multichainPassport: passport,
     }

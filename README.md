@@ -7,6 +7,7 @@ Multiverse Passport is an ERC-8257 tool for OpenSea's agent tool bazaar that che
 - Public path: any caller can submit an `address` and receive membership status only.
 - Gated path: an authenticated caller omits `address` and receives a full Multiverse Passport for their own wallet.
 - Membership logic: checks whether a wallet holds both a uNRMN/uNORMANCOMICS NFT or token and a thegoodlums NFT.
+- Custom passport builder: optionally accepts your own contract addresses, asset types, chain selections, unlock descriptions, and fee metadata per request.
 - Social resolution: enriches the gated passport with X, Farcaster, ENS, avatar, and display name data via web3.bio.
 - Multichain identity: ranks ENS, Basenames, Robinhood, Arbitrum, Optimism, Arc, and Hyperliquid naming data.
 - Monetization hooks: records usage and USDC recipient metadata for each lookup.
@@ -78,6 +79,39 @@ Public lookup example:
 curl -X POST http://localhost:3000/api/tool \
   -H 'content-type: application/json' \
   -d '{"address":"0x0000000000000000000000000000000000000000","chain":"base"}'
+```
+
+Custom passport example:
+
+```bash
+curl -X POST http://localhost:3000/api/tool \
+  -H 'content-type: application/json' \
+  -d '{
+    "address":"0x0000000000000000000000000000000000000000",
+    "customPassport":{
+      "name":"Creator Passport",
+      "match":"all",
+      "gates":[
+        {
+          "chain":"base",
+          "contractAddress":"0x0000000000000000000000000000000000000000",
+          "type":"erc721"
+        },
+        {
+          "chain":"arbitrum",
+          "contractAddress":"0x0000000000000000000000000000000000000000",
+          "type":"erc20",
+          "minBalance":"1000000000000000000"
+        }
+      ],
+      "unlocks":[
+        "Specialized chat access",
+        "Bonus NFT allowlist",
+        "Tiered community perks"
+      ],
+      "feeUsdc":"0.25"
+    }
+  }'
 ```
 
 Gated lookup example after registration:
@@ -157,6 +191,7 @@ PRIVATE_KEY=0x... RPC_URL=https://mainnet.base.org \
 - The first request receives a zero-value EIP-3009 challenge from `predicateGate`.
 - Retry with `npx @opensea/tool-sdk auth` or an ERC-8257-compatible client.
 - The tool resolves the verified caller's own multichain passport.
+- If you include `customPassport`, the tool also evaluates your manually supplied contracts and returns the unlocks that wallet qualifies for.
 
 ## Monetization and revenue tracking
 
@@ -174,4 +209,4 @@ The module also exposes per-chain USDC address helpers for Ethereum, Base, Arbit
 
 ## Notes for the broader passport-builder vision
 
-This scaffold covers the current Multiverse Passport MVP. To support fully user-generated token-gated passport cards later, build additional template storage, configurable rule composition, creator revenue splits, and reward delivery on top of this base handler.
+This scaffold now supports ad hoc creator-defined passport checks in a single request. For a fuller creator platform later, add persistent template storage, reusable creator dashboards, automated reward delivery, and onchain fee settlement.
